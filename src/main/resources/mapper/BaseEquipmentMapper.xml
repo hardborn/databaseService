@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sitop.smart365.dataservice.dao.BaseEquipmentMapper">
+  <resultMap id="BaseResultMap" type="com.sitop.smart365.dataservice.model.BaseEquipment">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="equipment_id" jdbcType="BIGINT" property="equipmentId" />
+    <result column="equipment_name" jdbcType="VARCHAR" property="equipmentName" />
+    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+    <result column="equipment_type_id" jdbcType="INTEGER" property="equipmentTypeId" />
+    <result column="voltage_level_code" jdbcType="VARCHAR" property="voltageLevelCode" />
+    <result column="manufacturer_id" jdbcType="INTEGER" property="manufacturerId" />
+    <result column="serial_number" jdbcType="VARCHAR" property="serialNumber" />
+    <result column="start_use_time" jdbcType="TIMESTAMP" property="startUseTime" />
+    <result column="agent_id" jdbcType="BIGINT" property="agentId" />
+    <result column="grid_id" jdbcType="BIGINT" property="gridId" />
+    <result column="line_id" jdbcType="BIGINT" property="lineId" />
+    <result column="customer_id" jdbcType="BIGINT" property="customerId" />
+    <result column="substation_id" jdbcType="BIGINT" property="substationId" />
+    <result column="bay_id" jdbcType="BIGINT" property="bayId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="last_modify_time" jdbcType="TIMESTAMP" property="lastModifyTime" />
+    <result column="is_deleted" jdbcType="INTEGER" property="isDeleted" />
+  </resultMap>
+</mapper>

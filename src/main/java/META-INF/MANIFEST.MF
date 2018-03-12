@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: com.sitop.smart365.dataservice.Application
+

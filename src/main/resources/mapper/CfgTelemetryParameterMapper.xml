@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sitop.smart365.dataservice.dao.CfgTelemetryParameterMapper">
+  <resultMap id="BaseResultMap" type="com.sitop.smart365.dataservice.model.CfgTelemetryParameter">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="parameter_id" jdbcType="VARCHAR" property="parameterId" />
+    <result column="device_id" jdbcType="VARCHAR" property="deviceId" />
+    <result column="coefficient" jdbcType="DOUBLE" property="coefficient" />
+    <result column="data_type" jdbcType="INTEGER" property="dataType" />
+    <result column="lower_bound" jdbcType="DOUBLE" property="lowerBound" />
+    <result column="upper_bound" jdbcType="DOUBLE" property="upperBound" />
+    <result column="alarm_level" jdbcType="INTEGER" property="alarmLevel" />
+    <result column="is_enable" jdbcType="BIT" property="isEnable" />
+    <result column="data_category" jdbcType="INTEGER" property="dataCategory" />
+    <result column="parsing_order" jdbcType="INTEGER" property="parsingOrder" />
+  </resultMap>
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sitop.smart365.dataservice.dao.MonitoringDeviceMapper">
+  <resultMap id="BaseResultMap" type="com.sitop.smart365.dataservice.model.MonitoringDevice">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="device_code" jdbcType="VARCHAR" property="deviceCode" />
+    <result column="batch_number" jdbcType="VARCHAR" property="batchNumber" />
+    <result column="serial_number" jdbcType="VARCHAR" property="serialNumber" />
+    <result column="is_business_entity" jdbcType="BIT" property="isBusinessEntity" />
+    <result column="customer_id" jdbcType="VARCHAR" property="customerId" />
+    <result column="substation_id" jdbcType="VARCHAR" property="substationId" />
+  </resultMap>
+</mapper>
