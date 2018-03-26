@@ -21,18 +21,18 @@ public class ParsingConfigurationController {
 
     @GetMapping
     @ResponseBody
-    public String list() {
+    public Result list() {
         List<ParsingConfiguration> parsingConfigurations = parsingConfigurationService.getAllParsingConfigs();
-        return ResultGenerator.genSuccessResult(parsingConfigurations, "DataProcessing").toString();
+        return ResultGenerator.genSuccessResult(parsingConfigurations );
     }
 
     @GetMapping("/{id}")
     @ResponseBody
-    public String getConfig(@PathVariable String id) {
+    public Result getConfig(@PathVariable String id) {
         LOG.info("[" + id + "]" + " 请求数据解析配置信息");
         ParsingConfiguration parsingConfiguration = parsingConfigurationService.getParsingConfig(id);
         if (parsingConfiguration != null) {
-            return ResultGenerator.genSuccessResult(parsingConfiguration).toString();
+            return ResultGenerator.genSuccessResult(parsingConfiguration);
         } else {
             LOG.warn("[" + id + "]" + " 获取数据解析配置异常");
             return null;

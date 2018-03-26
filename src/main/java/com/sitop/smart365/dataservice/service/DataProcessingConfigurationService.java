@@ -1,7 +1,7 @@
 package com.sitop.smart365.dataservice.service;
 
 import com.sitop.smart365.dataservice.model.*;
-import com.sun.javafx.binding.StringFormatter;
+
 import jdk.nashorn.internal.runtime.options.Option;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,36 +41,27 @@ public class DataProcessingConfigurationService {
     public List<DataProcessingConfiguration> getAllDataProcessingConfigs() {
         List<DataProcessingConfiguration> dataProcessingConfigList = new ArrayList<>();
 
-        long start = System.currentTimeMillis();
         List<MonitoringDevice> monitoringDevices = monitoringDeviceService.findAll();
         List<MonitoringDevice> monitorEntities = monitoringDevices
                 .stream()
                 .filter(device -> device.getIsBusinessEntity())
                 .collect(toList());
-        long end = System.currentTimeMillis();
-        LOG.info("+++++ monitoringDeviceService.findAll" + "\tUse time : " + (end - start) + " ms!");
 
-         start = System.currentTimeMillis();
         List<MonitoringDeviceRef> monitoringDeviceRefs = monitoringDeviceRefService.findAll();
-         end = System.currentTimeMillis();
-        LOG.info("+++++ monitoringDeviceRefService.findAll" + "\tUse time : " + (end - start) + " ms!");
 
-        start = System.currentTimeMillis();
-        Condition customerIdCondition = new Condition(CfgTelemetryParameter.class);
+        Condition customerIdCondition = new Condition(BaseCustomer.class);
         String customerIdConditionQuery = monitorEntities
                 .stream()
-                .map(d -> StringFormatter.format("customer_id = '%s'", d.getCustomerId()).getValue())
+                .map(d -> String.format("customer_id = '%s'", d.getCustomerId()))
                 .collect(Collectors.joining("OR "));
         customerIdCondition.createCriteria().andCondition(customerIdConditionQuery);
         List<BaseCustomer> customerList = customerService.findByCondition(customerIdCondition);
-        end = System.currentTimeMillis();
-        LOG.info("+++++ customerService.findByCondition" + "\tUse time : " + (end - start) + " ms!");
 
         for (int index = 0; index < monitorEntities.size(); index++) {
             final MonitoringDevice monitoringEntity = monitorEntities.get(index);
             DataProcessingConfiguration dataProcessingConfig = new DataProcessingConfiguration();
 
-            Optional<BaseCustomer> optionValue = customerList.stream().filter(c -> c.getCustomerId().equals(monitoringEntity.getCustomerId())).findFirst();
+            Optional<BaseCustomer> optionValue = customerList.stream().filter(c -> c.getCustomerId().toString().equals(monitoringEntity.getCustomerId())).findFirst();
 
             BaseCustomer customer = optionValue.orElse(null);
             dataProcessingConfig.setGuardId(monitoringEntity.getId());
@@ -92,38 +83,29 @@ public class DataProcessingConfigurationService {
                             .contains(d.getId()))
                     .collect(toList());
 
-            start = System.currentTimeMillis();
             Condition deviceIdCondition = new Condition(CfgTelemetryParameter.class);
-            String deviceIdConditionQuery =componentDevices
+            String deviceIdConditionQuery = componentDevices
                     .stream()
-                    .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                    .map(d -> String.format("device_id = '%s'", d.getId()))
                     .collect(Collectors.joining("OR "));
             deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
             List<CfgTelemetryParameter> allDeviceTelemetryParams = telemetryParameterService.findByCondition(deviceIdCondition);
-            end = System.currentTimeMillis();
-            LOG.info("+++++ telemetryParameterService.findByCondition" + "\tUse time : " + (end - start) + " ms!");
 
-            start = System.currentTimeMillis();
             deviceIdCondition = new Condition(CfgTeleindicationParameter.class);
-            deviceIdConditionQuery =componentDevices
+            deviceIdConditionQuery = componentDevices
                     .stream()
-                    .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                    .map(d -> String.format("device_id = '%s'", d.getId()))
                     .collect(Collectors.joining("OR "));
             deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
             List<CfgTeleindicationParameter> allDeviceTeleindicationParams = teleindicationParameterService.findByCondition(deviceIdCondition);
-            end = System.currentTimeMillis();
-            LOG.info("+++++ teleindicationParameterService.findByCondition" + "\tUse time : " + (end - start) + " ms!");
 
-            start = System.currentTimeMillis();
             deviceIdCondition = new Condition(CfgElectricityParameter.class);
-            deviceIdConditionQuery =componentDevices
+            deviceIdConditionQuery = componentDevices
                     .stream()
-                    .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                    .map(d -> String.format("device_id = '%s'", d.getId()))
                     .collect(Collectors.joining("OR "));
             deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
             List<CfgElectricityParameter> allDeviceElectricityParams = electricityParameterService.findByCondition(deviceIdCondition);
-            end = System.currentTimeMillis();
-            LOG.info("+++++ electricityParameterService.findByCondition" + "\tUse time : " + (end - start) + " ms!");
 
             for (MonitoringDevice componentDevice : componentDevices) {
                 MonitoringDeviceConfig deviceConfig = new MonitoringDeviceConfig();
@@ -133,21 +115,21 @@ public class DataProcessingConfigurationService {
                         .findFirst().get().getChildOrder();
                 deviceConfig.setParsingOrder(deviceOrder);
 
-                List<CfgTelemetryParameter> deviceTelemetryParams =  allDeviceTelemetryParams
+                List<CfgTelemetryParameter> deviceTelemetryParams = allDeviceTelemetryParams
                         .stream()
                         .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
                         .collect(toList());
                 modifyAdditionalTelemetryParameters(deviceTelemetryParams);
                 deviceConfig.setTelemetryParameterConfigs(deviceTelemetryParams);
 
-                List<CfgTeleindicationParameter> deviceTeleindicationParams =  allDeviceTeleindicationParams
+                List<CfgTeleindicationParameter> deviceTeleindicationParams = allDeviceTeleindicationParams
                         .stream()
                         .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
                         .collect(toList());
                 modifyAdditionalTeleindicationParameters(deviceTeleindicationParams);
                 deviceConfig.setTelecommunicatingParameterConfigs(deviceTeleindicationParams);
 
-                List<CfgElectricityParameter> deviceElectricityParams =  allDeviceElectricityParams
+                List<CfgElectricityParameter> deviceElectricityParams = allDeviceElectricityParams
                         .stream()
                         .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
                         .collect(toList());
@@ -165,78 +147,61 @@ public class DataProcessingConfigurationService {
 
     public DataProcessingConfiguration getDataProcessingConfigs(String entityId) {
         DataProcessingConfiguration dataProcessingConfig = new DataProcessingConfiguration();
-        long start = System.currentTimeMillis();
         MonitoringDevice monitoringEntity = monitoringDeviceService.findById(entityId);
         if (monitoringEntity == null) {
             return null;
         }
-        long end = System.currentTimeMillis();
-        LOG.info("+++++ monitoringDeviceService.findById" + "\tUse time : " + (end - start) + " ms!");
 
         String currentCustomerId = monitoringEntity.getCustomerId();
         dataProcessingConfig.setGuardId(monitoringEntity.getId());
         dataProcessingConfig.setHeartbeatId("HBT000" + monitoringEntity.getId());
         dataProcessingConfig.setCustomerId(currentCustomerId);
 
-        start = System.currentTimeMillis();
-        BaseCustomer currentCustomerInfo = customerService.findById(currentCustomerId);
-        end = System.currentTimeMillis();
-        LOG.info("+++++ customerService.findById" + "\tUse time : " + (end - start) + " ms!");
+        Condition customerIdCondition = new Condition(BaseCustomer.class);
+        String customerIdConditionQuery =
+               String.format("customer_id = '%s'", currentCustomerId);
+        customerIdCondition.createCriteria().andCondition(customerIdConditionQuery);
+        List<BaseCustomer> currentCustomerInfos = customerService.findByCondition(customerIdCondition);
 
-        if (currentCustomerInfo != null) {
-            dataProcessingConfig.setAgentId(currentCustomerInfo.getAgentId().toString());
+        if (currentCustomerInfos != null && currentCustomerInfos.size() > 0) {
+            dataProcessingConfig.setAgentId(currentCustomerInfos.get(0).getAgentId().toString());
         }
 
-        start = System.currentTimeMillis();
         Condition entityIdCondition = new Condition(MonitoringDeviceRef.class);
-        String entityIdConditionQuery = StringFormatter.format("parent_id = '%s'", monitoringEntity.getId()).getValue();
+        String entityIdConditionQuery = String.format("parent_id = '%s'", monitoringEntity.getId());
         entityIdCondition.createCriteria().andCondition(entityIdConditionQuery);
         List<MonitoringDeviceRef> monitoringDeviceRefs = monitoringDeviceRefService.findByCondition(entityIdCondition);
-        end = System.currentTimeMillis();
-        LOG.info("+++++ monitoringDeviceRefService.findByCondition" + "\tUse time : " + (end - start) + " ms!");
 
         String componentDeviceIds = monitoringDeviceRefs
                 .stream()
                 .map(d -> d.getChildId())
                 .collect(Collectors.joining(","));
 
-        start = System.currentTimeMillis();
         List<MonitoringDevice> componentDeviceList = monitoringDeviceService.findByIds(componentDeviceIds);
-        end = System.currentTimeMillis();
-        LOG.info("+++++ monitoringDeviceService.findByIds" + "\tUse time : " + (end - start) + " ms!");
 
-        start = System.currentTimeMillis();
         Condition deviceIdCondition = new Condition(CfgTelemetryParameter.class);
-        String deviceIdConditionQuery =componentDeviceList
+        String deviceIdConditionQuery = componentDeviceList
                 .stream()
-                .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                .map(d -> String.format("device_id = '%s'", d.getId()))
                 .collect(Collectors.joining("OR "));
         deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
         List<CfgTelemetryParameter> allDeviceTelemetryParams = telemetryParameterService.findByCondition(deviceIdCondition);
-        end = System.currentTimeMillis();
-        LOG.info("+++++ telemetryParameterService.findByCondition" + "\tUse time : " + (end - start) + " ms!");
 
-        start = System.currentTimeMillis();
         deviceIdCondition = new Condition(CfgTeleindicationParameter.class);
-        deviceIdConditionQuery =componentDeviceList
+        deviceIdConditionQuery = componentDeviceList
                 .stream()
-                .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                .map(d -> String.format("device_id = '%s'", d.getId()))
                 .collect(Collectors.joining("OR "));
         deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
         List<CfgTeleindicationParameter> allDeviceTeleindicationParams = teleindicationParameterService.findByCondition(deviceIdCondition);
-        end = System.currentTimeMillis();
-        LOG.info("+++++ teleindicationParameterService.findByCondition" + "\tUse time : " + (end - start) + " ms!");
 
-        start = System.currentTimeMillis();
         deviceIdCondition = new Condition(CfgElectricityParameter.class);
-        deviceIdConditionQuery =componentDeviceList
+        deviceIdConditionQuery = componentDeviceList
                 .stream()
-                .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                .map(d -> String.format("device_id = '%s'", d.getId()))
                 .collect(Collectors.joining("OR "));
         deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
         List<CfgElectricityParameter> allDeviceElectricityParams = electricityParameterService.findByCondition(deviceIdCondition);
-        end = System.currentTimeMillis();
-        LOG.info("+++++ electricityParameterService.findByCondition" + "\tUse time : " + (end - start) + " ms!");
 
         List<MonitoringDeviceConfig> monitoringDeviceConfigs = new ArrayList<MonitoringDeviceConfig>();
         for (MonitoringDevice componentDevice : componentDeviceList) {
@@ -247,21 +212,21 @@ public class DataProcessingConfigurationService {
                     .findFirst().get().getChildOrder();
             deviceConfig.setParsingOrder(deviceOrder);
 
-            List<CfgTelemetryParameter> deviceTelemetryParams =  allDeviceTelemetryParams
+            List<CfgTelemetryParameter> deviceTelemetryParams = allDeviceTelemetryParams
                     .stream()
                     .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
                     .collect(toList());
             modifyAdditionalTelemetryParameters(deviceTelemetryParams);
             deviceConfig.setTelemetryParameterConfigs(deviceTelemetryParams);
 
-            List<CfgTeleindicationParameter> deviceTeleindicationParams =  allDeviceTeleindicationParams
+            List<CfgTeleindicationParameter> deviceTeleindicationParams = allDeviceTeleindicationParams
                     .stream()
                     .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
                     .collect(toList());
             modifyAdditionalTeleindicationParameters(deviceTeleindicationParams);
             deviceConfig.setTelecommunicatingParameterConfigs(deviceTeleindicationParams);
 
-            List<CfgElectricityParameter> deviceElectricityParams =  allDeviceElectricityParams
+            List<CfgElectricityParameter> deviceElectricityParams = allDeviceElectricityParams
                     .stream()
                     .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
                     .collect(toList());
@@ -279,7 +244,7 @@ public class DataProcessingConfigurationService {
             Condition parameterIdCondition = new Condition(CfgEquipmentDeviceRef.class);
             String parameterIdConditionQuery = deviceElectricityParams
                     .stream()
-                    .map(p -> StringFormatter.format("param_id = '%s'", p.getParameterId()).getValue())
+                    .map(p -> String.format("param_id = '%s'", p.getParameterId()))
                     .collect(Collectors.joining("OR "));
             parameterIdCondition.createCriteria().andCondition(parameterIdConditionQuery);
             List<CfgEquipmentDeviceRef> equipmentDeviceRefs = equipmentDeviceRefService.findByCondition(parameterIdCondition);
@@ -289,7 +254,7 @@ public class DataProcessingConfigurationService {
                         .stream()
                         .collect(Collectors.toCollection(() -> new TreeSet<CfgEquipmentDeviceRef>((r1, r2) -> r1.getEquipmentId().compareTo(r2.getEquipmentId()))))
                         .stream()
-                        .map(r -> StringFormatter.format("equipment_id = '%s'", r.getEquipmentId()).getValue())
+                        .map(r -> String.format("equipment_id = '%s'", r.getEquipmentId()))
                         .collect(Collectors.joining("OR "));
                 equipmentIdCondition.createCriteria().andCondition(equipmentIdConditionQuery);
                 List<BaseEquipment> equipmentList = equipmentService.findByCondition(equipmentIdCondition);
@@ -303,13 +268,13 @@ public class DataProcessingConfigurationService {
                     electricityParameter.setParameterType(r.getParamType());
                     electricityParameter.setParameterSubType(r.getParamTypeSub());
                     electricityParameter.setParameterUnit(r.getUnit());
-                    electricityParameter.setSubstationId(equipmentList
+                    Optional<BaseEquipment> equipment = equipmentList
                             .stream()
                             .filter(e -> e.getEquipmentId().equals(r.getEquipmentId()))
-                            .findFirst()
-                            .get()
-                            .getSubstationId().toString());
-                    // electricityParameter.setSubstationId();
+                            .findFirst();
+                    if (equipment.isPresent()) {
+                        electricityParameter.setSubstationId(equipment.get().getSubstationId().toString());
+                    }
                 });
             }
         }
@@ -320,7 +285,7 @@ public class DataProcessingConfigurationService {
             Condition parameterIdCondition = new Condition(CfgEquipmentDeviceRef.class);
             String parameterIdConditionQuery = deviceParams
                     .stream()
-                    .map(p -> StringFormatter.format("param_id = '%s'", p.getParameterId()).getValue())
+                    .map(p -> String.format("param_id = '%s'", p.getParameterId()))
                     .collect(Collectors.joining("OR "));
             parameterIdCondition.createCriteria().andCondition(parameterIdConditionQuery);
             List<CfgEquipmentDeviceRef> equipmentDeviceRefs = equipmentDeviceRefService.findByCondition(parameterIdCondition);
@@ -331,7 +296,7 @@ public class DataProcessingConfigurationService {
                         .stream()
                         .collect(Collectors.toCollection(() -> new TreeSet<CfgEquipmentDeviceRef>((r1, r2) -> r1.getEquipmentId().compareTo(r2.getEquipmentId()))))
                         .stream()
-                        .map(r -> StringFormatter.format("equipment_id = '%s'", r.getEquipmentId()).getValue())
+                        .map(r -> String.format("equipment_id = '%s'", r.getEquipmentId()))
                         .collect(Collectors.joining("OR "));
                 equipmentIdCondition.createCriteria().andCondition(equipmentIdConditionQuery);
                 List<BaseEquipment> equipmentList = equipmentService.findByCondition(equipmentIdCondition);
@@ -345,12 +310,13 @@ public class DataProcessingConfigurationService {
                     parameter.setParameterType(r.getParamType());
                     parameter.setParameterSubType(r.getParamTypeSub());
                     parameter.setParameterUnit(r.getUnit());
-                    parameter.setSubstationId(equipmentList
+                    Optional<BaseEquipment> equipment = equipmentList
                             .stream()
                             .filter(e -> e.getEquipmentId().equals(r.getEquipmentId()))
-                            .findFirst()
-                            .get()
-                            .getSubstationId().toString());
+                            .findFirst();
+                    if (equipment.isPresent()) {
+                        parameter.setSubstationId(equipment.get().getSubstationId().toString());
+                    }
                 });
             }
         }
@@ -361,7 +327,7 @@ public class DataProcessingConfigurationService {
             Condition parameterIdCondition = new Condition(CfgEquipmentDeviceRef.class);
             String parameterIdConditionQuery = deviceParams
                     .stream()
-                    .map(p -> StringFormatter.format("param_id = '%s'", p.getParameterId()).getValue())
+                    .map(p -> String.format("param_id = '%s'", p.getParameterId()))
                     .collect(Collectors.joining("OR "));
             parameterIdCondition.createCriteria().andCondition(parameterIdConditionQuery);
             List<CfgEquipmentDeviceRef> equipmentDeviceRefs = equipmentDeviceRefService.findByCondition(parameterIdCondition);
@@ -372,7 +338,7 @@ public class DataProcessingConfigurationService {
                         .stream()
                         .collect(Collectors.toCollection(() -> new TreeSet<CfgEquipmentDeviceRef>((r1, r2) -> r1.getEquipmentId().compareTo(r2.getEquipmentId()))))
                         .stream()
-                        .map(r -> StringFormatter.format("equipment_id = '%s'", r.getEquipmentId()).getValue())
+                        .map(r -> String.format("equipment_id = '%s'", r.getEquipmentId()))
                         .collect(Collectors.joining("OR "));
                 equipmentIdCondition.createCriteria().andCondition(equipmentIdConditionQuery);
                 List<BaseEquipment> equipmentList = equipmentService.findByCondition(equipmentIdCondition);
@@ -385,12 +351,13 @@ public class DataProcessingConfigurationService {
                     parameter.setEquipmentId(r.getEquipmentId());
                     parameter.setParameterType(r.getParamType());
                     parameter.setParameterSubType(r.getParamTypeSub());
-                    parameter.setSubstationId(equipmentList
+                    Optional<BaseEquipment> equipment = equipmentList
                             .stream()
                             .filter(e -> e.getEquipmentId().equals(r.getEquipmentId()))
-                            .findFirst()
-                            .get()
-                            .getSubstationId().toString());
+                            .findFirst();
+                    if (equipment.isPresent()) {
+                        parameter.setSubstationId(equipment.get().getSubstationId().toString());
+                    }
                 });
             }
         }

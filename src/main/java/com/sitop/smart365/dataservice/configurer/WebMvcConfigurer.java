@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.Labels;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
+import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter4;
 import com.sitop.smart365.dataservice.core.Result;
 import com.sitop.smart365.dataservice.core.ResultCode;
@@ -45,19 +46,19 @@ public class WebMvcConfigurer extends WebMvcConfigurerAdapter {
     @Value("${spring.profiles.active}")
     private String env;//当前激活的配置文件
 
-    ////使用阿里 FastJson 作为JSON MessageConverter
-    //@Override
-    //public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-     //   FastJsonHttpMessageConverter5 converter = new FastJsonHttpMessageConverter4();
-    //    FastJsonConfig config = new FastJsonConfig();
-    //    config.setSerializerFeatures(SerializerFeature.WriteMapNullValue,//保留空的字段
-    //            SerializerFeature.WriteNullStringAsEmpty,//String null -> ""
-    //            SerializerFeature.WriteNullNumberAsZero);//Number null -> 0
+    //使用阿里 FastJson 作为JSON MessageConverter
+    @Override
+    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+       FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
+        FastJsonConfig config = new FastJsonConfig();
+        config.setSerializerFeatures(SerializerFeature.WriteMapNullValue,//保留空的字段
+                SerializerFeature.WriteNullStringAsEmpty,//String null -> ""
+                SerializerFeature.WriteNullNumberAsZero);//Number null -> 0
 
-    //    converter.setFastJsonConfig(config);
-    //    converter.setDefaultCharset(Charset.forName("UTF-8"));
-    //    converters.add(converter);
-    //}
+        converter.setFastJsonConfig(config);
+        converter.setDefaultCharset(Charset.forName("UTF-8"));
+        converters.add(converter);
+    }
 
 
     //统一异常处理
@@ -132,7 +133,7 @@ public class WebMvcConfigurer extends WebMvcConfigurerAdapter {
         response.setHeader("Content-type", "application/json;charset=UTF-8");
         response.setStatus(200);
         try {
-            response.getWriter().write(JSON.toJSONString(result, Labels.excludes(result.getFilterLabel()), SerializerFeature.WriteMapNullValue));
+            response.getWriter().write(JSON.toJSONString(result));
         } catch (IOException ex) {
             logger.error(ex.getMessage());
         }

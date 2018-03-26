@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainer
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 
 @Configuration
 public class RabbitMQConfig {
@@ -23,10 +24,14 @@ public class RabbitMQConfig {
     public static final  String ALARM_EXCHANGE="Smart365_alarm_exchange";
     //历史数据消息交换机名称
     public static final String HISTORY_EXCHANGE="Smart365_history_exchange";
+
+    public static final String STATISTICS_EXCHANGE = "Smart365_statistics_exchange";
     //实时告警队列Key
     public static final String ALARM_ROUTINGKEY = "Alarm.#";
     //历史数据队列key
     public static final String HISTORY_ROUTINGKEY ="History.#";
+
+    public static final String STATISTICS_ROUTINGKEY = "Statistics.#";
 
     @Bean(name = "defaultConnectionFactory")
     @Primary
@@ -41,6 +46,7 @@ public class RabbitMQConfig {
         connectionFactory.setPort(port);
         connectionFactory.setUsername(username);
         connectionFactory.setPassword(password);
+//        connectionFactory.setPublisherConfirms(true);
         return connectionFactory;
     }
 
@@ -50,19 +56,20 @@ public class RabbitMQConfig {
             @Qualifier("defaultConnectionFactory") ConnectionFactory connectionFactory
     ) {
         RabbitTemplate firstRabbitTemplate = new RabbitTemplate(connectionFactory);
+
         return firstRabbitTemplate;
     }
 
 
-   //@Bean(name = "defaultContainerFactory")
-   // public SimpleRabbitListenerContainerFactory defaultContainerFactory(
-   //         SimpleRabbitListenerContainerFactoryConfigurer configurer,
-   //         @Qualifier("defaultConnectionFactory") ConnectionFactory connectionFactory
-   // ) {
-   //     SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-   //     configurer.configure(factory, connectionFactory);
-   //     return factory;
-   // }
+   @Bean(name = "defaultContainerFactory")
+    public SimpleRabbitListenerContainerFactory defaultContainerFactory(
+            SimpleRabbitListenerContainerFactoryConfigurer configurer,
+            @Qualifier("defaultConnectionFactory") ConnectionFactory connectionFactory
+    ) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        configurer.configure(factory, connectionFactory);
+        return factory;
+    }
 
     @Bean
     public TopicExchange realtimeExchange(){
@@ -80,6 +87,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public TopicExchange statisticsExchange(){
+        return  new TopicExchange(STATISTICS_EXCHANGE,true,false);
+    }
+
+    @Bean
     public Queue alarmDataQueue(){
         return  new Queue("Smart365_alarm_service",true);
     }
@@ -90,6 +102,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue statisticsDataQueue() {
+        return  new Queue("Smart365_statistics_service",true);
+    }
+
+    @Bean
     public Binding alarmBinding(){
         return BindingBuilder.bind(alarmDataQueue()).to(alarmExchange()).with(ALARM_ROUTINGKEY);
     }
@@ -97,5 +114,16 @@ public class RabbitMQConfig {
     @Bean
     public Binding historyDataBinding(){
         return  BindingBuilder.bind(historyDataQueue()).to(historyExchange()).with(HISTORY_ROUTINGKEY);
+    }
+
+    @Bean
+    public Binding statisticsDataBinding(){
+        return  BindingBuilder.bind(statisticsDataQueue()).to(statisticsExchange()).with(STATISTICS_ROUTINGKEY);
+    }
+
+    @Bean
+    public MappingJackson2MessageConverter jackson2Converter() {
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        return converter;
     }
 }

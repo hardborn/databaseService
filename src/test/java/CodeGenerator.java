@@ -45,7 +45,7 @@ public class CodeGenerator {
         //        "cfg_telemetry_parameter",
         //        "cfg_telecommunicating_parameter",
         //        "cfg_electricity_parameter");
-        genCode("monitoring_device");
+        genCode("data_electricity");
         //genCodeByCustomModelName("输入表名","输入自定义Model名称");
     }
 

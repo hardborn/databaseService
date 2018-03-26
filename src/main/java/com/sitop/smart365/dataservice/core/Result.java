@@ -17,8 +17,6 @@ public class Result {
     private int code;
     private String message;
     private Object data;
-    @JSONField(serialize = false)
-    private String filterLabel;
 
     public Result setCode(ResultCode resultCode) {
         this.code = resultCode.code();
@@ -46,31 +44,12 @@ public class Result {
         this.data = data;
         return this;
     }
-    public String getFilterLabel() {
-        return filterLabel;
-    }
-
-    public Result setFilterLabel(String filterLabel) {
-        this.filterLabel = filterLabel;
-        return  this;
-    }
 
 
     @Override
     public String toString() {
-        //JSONSerializer serializer = new JSONSerializer();
-        //serializer.config(SerializerFeature.SkipTransientField, false);
-        //serializer.config(SerializerFeature.WriteMapNullValue, true);
-        //serializer.addFilter(Labels.excludes(this.filterLabel));
-        //serializer.write(this);
-        //return serializer.toString();
         String str = null;
-
-        if (this.filterLabel == null){
-           str = JSON.toJSONString(this,SerializerFeature.WriteMapNullValue);
-        }else{
-            str = JSON.toJSONString(this, Labels.excludes(this.filterLabel),SerializerFeature.WriteMapNullValue  );
-        }
+        str = JSON.toJSONString(this, SerializerFeature.WriteMapNullValue);
         return str;
     }
 

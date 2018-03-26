@@ -1,5 +1,7 @@
 package com.sitop.smart365.dataservice.model;
 
+import java.sql.Date;
+
 public class AlarmInfo {
 
     private String agentId;
@@ -10,6 +12,7 @@ public class AlarmInfo {
     private String alarmValue;
     private String alarmContent;
     private String alarmLevel;
+    private Date alarmTime;
 
     public String getAgentId() {
         return agentId;
@@ -73,5 +76,13 @@ public class AlarmInfo {
 
     public void setAlarmValue(String alarmValue) {
         this.alarmValue = alarmValue;
+    }
+
+    public Date getAlarmTime() {
+        return alarmTime;
+    }
+
+    public void setAlarmTime(Date alarmTime) {
+        this.alarmTime = alarmTime;
     }
 }

@@ -1,20 +1,23 @@
 package com.sitop.smart365.dataservice.model;
 
-import java.sql.Timestamp;
+import com.alibaba.fastjson.annotation.JSONField;
+
+import java.sql.Date;
+
 
 public class HistoryDataItem {
+    @JSONField(name = "paramId")
     private String parameterId;
+    @JSONField(name = "currentValue")
     private String parameterValue;
+    @JSONField(name = "IsAlarm")
     private String isAlarm;
-    private Long timestamp;
-
-    public String getIsAlarm() {
-        return isAlarm;
-    }
-
-    public void setIsAlarm(String isAlarm) {
-        this.isAlarm = isAlarm;
-    }
+    @JSONField(name = "currentTime")
+    private Date currentTime;
+    @JSONField(name = "upLimit")
+    private double upLimit;
+    @JSONField(name = "downLimit")
+    private double downLimit;
 
     public String getParameterValue() {
         return parameterValue;
@@ -32,11 +35,36 @@ public class HistoryDataItem {
         this.parameterId = parameterId;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+
+    public Date getCurrentTime() {
+        return currentTime;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public void setCurrentTime(Date currentTime) {
+        this.currentTime = currentTime;
+    }
+
+    public String getIsAlarm() {
+        return isAlarm;
+    }
+
+    public void setIsAlarm(String isAlarm) {
+        this.isAlarm = isAlarm;
+    }
+
+    public double getDownLimit() {
+        return downLimit;
+    }
+
+    public void setDownLimit(double downLimit) {
+        this.downLimit = downLimit;
+    }
+
+    public double getUpLimit() {
+        return upLimit;
+    }
+
+    public void setUpLimit(double upLimit) {
+        this.upLimit = upLimit;
     }
 }

@@ -3,7 +3,6 @@ package com.sitop.smart365.dataservice.service;
 import com.alibaba.fastjson.JSON;
 import com.sitop.smart365.dataservice.model.*;
 import com.sitop.smart365.dataservice.utility.LogAspect;
-import com.sun.javafx.binding.StringFormatter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Service;
@@ -129,7 +128,7 @@ public class ParsingConfigurationService {
         parsingConfiguration.setMonitoringCommandInfos(entityCommandInfo);
 
         Condition condition = new Condition(MonitoringDeviceRef.class);
-        String conditionQuery = StringFormatter.format("parent_id = '%s'", entityId).getValue();
+        String conditionQuery = String.format("parent_id = '%s'", entityId);
         condition.createCriteria().andCondition(conditionQuery);
         List<MonitoringDeviceRef> deviceRefs = monitoringDeviceRefService.findByCondition(condition);
 
@@ -150,7 +149,7 @@ public class ParsingConfigurationService {
         Condition deviceIdCondition = new Condition(CfgTelemetryParameter.class);
         String deviceIdConditionQuery = componentDevices
                 .stream()
-                .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                .map(d -> String.format("device_id = '%s'", d.getId()))
                 .collect(Collectors.joining("OR "));
         deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
         List<CfgTelemetryParameter> allDeviceTelemetryParams = telemetryParameterService.findByCondition(deviceIdCondition);
@@ -158,7 +157,7 @@ public class ParsingConfigurationService {
         deviceIdCondition = new Condition(CfgTeleindicationParameter.class);
         deviceIdConditionQuery = componentDevices
                 .stream()
-                .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                .map(d -> String.format("device_id = '%s'", d.getId()))
                 .collect(Collectors.joining("OR "));
         deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
         List<CfgTeleindicationParameter> allDeviceTeleindicationParams = teleindicationParameterService.findByCondition(deviceIdCondition);
@@ -166,7 +165,7 @@ public class ParsingConfigurationService {
         deviceIdCondition = new Condition(CfgElectricityParameter.class);
         deviceIdConditionQuery = componentDevices
                 .stream()
-                .map(d -> StringFormatter.format("device_id = '%s'", d.getId()).getValue())
+                .map(d -> String.format("device_id = '%s'", d.getId()))
                 .collect(Collectors.joining("OR "));
         deviceIdCondition.createCriteria().andCondition(deviceIdConditionQuery);
         List<CfgElectricityParameter> allDeviceElectricityParams = electricityParameterService.findByCondition(deviceIdCondition);
@@ -182,6 +181,7 @@ public class ParsingConfigurationService {
             List<CfgTelemetryParameter> deviceTelemetryParams = allDeviceTelemetryParams
                     .stream()
                     .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
+                    .sorted((e1, e2) -> Integer.compare(e1.getParsingOrder(), e2.getParsingOrder()))
                     .collect(toList());
 
             deviceConfig.setTelemetryParameterConfigs(deviceTelemetryParams);
@@ -189,6 +189,7 @@ public class ParsingConfigurationService {
             List<CfgTeleindicationParameter> deviceTeleindicationParams = allDeviceTeleindicationParams
                     .stream()
                     .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
+                    .sorted((e1, e2) -> Integer.compare(e1.getParsingOrder(), e2.getParsingOrder()))
                     .collect(toList());
 
             deviceConfig.setTelecommunicatingParameterConfigs(deviceTeleindicationParams);
@@ -196,12 +197,14 @@ public class ParsingConfigurationService {
             List<CfgElectricityParameter> deviceElectricityParams = allDeviceElectricityParams
                     .stream()
                     .filter(p -> p.getDeviceId().equals(componentDevice.getId()))
+                    .sorted((e1, e2) -> Integer.compare(e1.getParsingOrder(), e2.getParsingOrder()))
                     .collect(toList());
 
             deviceConfig.setElectricityParameterConfigs(deviceElectricityParams);
 
             monitoringDeviceConfigs.add(deviceConfig);
         }
+        monitoringDeviceConfigs = monitoringDeviceConfigs.stream().sorted((e1, e2) -> Integer.compare(e1.getParsingOrder(), e2.getParsingOrder())).collect(toList());
         parsingConfiguration.setMonitoringDeviceConfigs(monitoringDeviceConfigs);
         return parsingConfiguration;
     }

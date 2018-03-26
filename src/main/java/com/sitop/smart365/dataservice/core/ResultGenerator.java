@@ -24,7 +24,6 @@ public class ResultGenerator {
         return new Result()
                 .setCode(ResultCode.SUCCESS)
                 .setMessage(DEFAULT_SUCCESS_MESSAGE)
-                .setFilterLabel(labelFilter)
                 .setData(data);
     }
 

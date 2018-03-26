@@ -7,7 +7,7 @@ import com.sitop.smart365.dataservice.model.AlarmInfo;
 import com.sitop.smart365.dataservice.model.MonitoringDeviceRef;
 import com.sitop.smart365.dataservice.service.AlarmDataEnvItemService;
 import com.sitop.smart365.dataservice.service.AlarmDataEnvService;
-import com.sun.javafx.binding.StringFormatter;
+
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -29,18 +29,17 @@ public class AlarmReceiver {
     private AlarmDataEnvItemService alarmDataEnvItemService;
 
     @RabbitListener(queues = "Smart365_alarm_service")
-    public void process(byte[] message) {
-        String str = new String(message, StandardCharsets.UTF_8);
-        AlarmInfo alarmInfo = JSON.parseObject(str, AlarmInfo.class);
-        System.out.println("AlarmReceiver: " + str);
+    public void process(String message) {
+        AlarmInfo alarmInfo = JSON.parseObject(message, AlarmInfo.class);
+        System.out.println("AlarmReceiver: " + message);
 
         Condition condition = new Condition(AlarmDataEnv.class);
-        String conditionQuery = StringFormatter.format("equipment_id = '%s' AND  param_id = '%s' AND handle_state <> 2", alarmInfo.getEquipmentId(), alarmInfo.getParamId()).getValue();
+        String conditionQuery = String.format("equipment_id = '%s' AND  param_id = '%s' AND handle_state <> 2", alarmInfo.getEquipmentId(), alarmInfo.getParamId());
         condition.createCriteria().andCondition(conditionQuery);
         List<AlarmDataEnv> alarmDataEnvs = alarmDataEnvService.findByCondition(condition);
 
         String alarmUid = UUID.randomUUID().toString();
-        Date currentDate = new Date();
+        //Date currentDate = new Date();
         AlarmDataEnvItem alarmDataEnvItem = new AlarmDataEnvItem();
 
         if (alarmDataEnvs == null || alarmDataEnvs.size() == 0) {
@@ -55,7 +54,7 @@ public class AlarmReceiver {
             alarmDataEnv.setAlarmLevel(Integer.parseInt(alarmInfo.getAlarmLevel()));
             alarmDataEnv.setAlarmValue(Float.parseFloat(alarmInfo.getAlarmValue()));
             alarmDataEnv.setAlarmUid(alarmUid);
-            alarmDataEnv.setAlarmTime(currentDate);
+            alarmDataEnv.setAlarmTime(alarmInfo.getAlarmTime());
             alarmDataEnv.setConfirmState(0);
             alarmDataEnv.setHandleState(0);
             alarmDataEnvService.save(alarmDataEnv);
@@ -81,7 +80,7 @@ public class AlarmReceiver {
         alarmDataEnvItem.setAlarmContent(alarmInfo.getAlarmContent());
         alarmDataEnvItem.setAlarmLevel(Integer.parseInt(alarmInfo.getAlarmLevel()));
         alarmDataEnvItem.setAlarmValue(Float.parseFloat(alarmInfo.getAlarmValue()));
-        alarmDataEnvItem.setAlarmTime(currentDate);
+        alarmDataEnvItem.setAlarmTime(alarmInfo.getAlarmTime());
         alarmDataEnvItem.setAlarmItemUid(UUID.randomUUID().toString());
         alarmDataEnvItem.setConfirmState(0);
         alarmDataEnvItem.setHandleState(0);
